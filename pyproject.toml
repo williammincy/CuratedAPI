@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "curatedapi_williammincy"
+name = "curatedapi_wm"
 version = "0.9.1"
 authors = [
   { name="William Mincy", email="me@williammincy.com" },
@@ -12,9 +12,11 @@ description = "This package provides a Python interface for the Curated API. Wit
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+  "Development Status :: Active",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
 ]
 
 [project.urls]
