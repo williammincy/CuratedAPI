@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "curatedapi_williammincy"
+version = "0.9.1"
+authors = [
+  { name="William Mincy", email="me@williammincy.com" },
+]
+description = "This package provides a Python interface for the Curated API. With it, you can easily manage issues, links, and subscribers within publications."
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/williammincy/CuratedAPI"
+"Bug Tracker" = "https://github.com/williammincy/CuratedAPI/issues"
