@@ -7,7 +7,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 with codecs.open(os.path.join(here, "README.md"), encoding="utf-8") as fh:
     long_description = "\n" + fh.read()
 
-VERSION = '0.9.1'
+VERSION = '0.9.2'
 DESCRIPTION = 'API class for Curated.co'
 LONG_DESCRIPTION = 'This package provides a Python interface for the Curated API. With it, you can easily manage issues, links, and subscribers within publications.'
 
