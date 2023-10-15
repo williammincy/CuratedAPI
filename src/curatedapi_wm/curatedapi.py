@@ -64,7 +64,6 @@ class CuratedLink:
         }
         return json.dumps(link_data)
 
-
 class CuratedCategory:
     def __init__(self, code:str=None, name:str=None, sponsored:bool=False, limit:int=None):
         self.code = code
@@ -261,10 +260,6 @@ class CuratedApi:
         Returns:
             str: The concatenated URL string.
         """
-
-        if not self.publication_id:
-            raise ValueError("Publication ID has not been set.")
-
         base_url = self.get_base_url()
         categories_url = f"{base_url}/publications/{self.publication_id}/categories"
         return categories_url
@@ -276,9 +271,6 @@ class CuratedApi:
         Returns:
             str: The concatenated URL string.
         """
-        if not self.publication_id:
-            raise ValueError("Publication ID has not been set.")
-
         publication_url = f"{self.base_url}/publications/{self.publication_id}/links"
         return publication_url
     
@@ -289,11 +281,31 @@ class CuratedApi:
         Returns:
             str: The concatenated URL string.
         """
-        if not self.publication_id:
-            raise ValueError("Publication ID has not been set.")
-
         subscribers_url = f"{self.base_url}/publications/{self.publication_id}/email_unsubscribers"
         return subscribers_url
+    
+    def get_email_unsubscribers_url(self):
+        """
+        Returns the email unsubscribers URL for the stored publication ID.
+
+        Returns:
+            str: The concatenated URL string.
+        """
+        unsubscribers_url = f"{self.base_url}/publications/{self.publication_id}/email_unsubscribers"
+        return unsubscribers_url
+    
+    def get_email_subscriber_url(self, subscriber_id:int):
+        """
+        Returns the URL for the specified link ID and optionally the publication ID.
+
+        Parameters:
+            subscriber_id (int): The ID of the email subscriber.
+
+        Returns:
+            str: The concatenated URL string.
+        """
+        link_url = f"{self.base_url}/publications/{self.publication_id}/email_unsubscribers/{subscriber_id}"
+        return link_url
     
     def get_publication_issues_url(self):
         """
@@ -302,10 +314,20 @@ class CuratedApi:
         Returns:
             str: The concatenated URL string.
         """
-        if not self.publication_id:
-            raise ValueError("Publication ID has not been set.")
-
         issues_url = f"{self.base_url}/publications/{self.publication_id}/issues"
+        return issues_url
+
+    def get_publication_issue_url(self,issue_number:int):
+        """
+        Returns the publication issue URL for one issue for the stored publication ID.
+
+        Parameters:
+            issue_number (int): The ID of the issue.
+
+        Returns:
+            str: The concatenated URL string.
+        """
+        issues_url = f"{self.base_url}/publications/{self.publication_id}/issues/{issue_number}"
         return issues_url
 
     def get_publications_url(self):
@@ -315,9 +337,6 @@ class CuratedApi:
         Returns:
             str: The concatenated URL string.
         """
-        if not self.publication_id:
-            raise ValueError("Publication ID has not been set.")
-
         publication_url = f"{self.base_url}/publications"
         return publication_url
 
@@ -406,17 +425,23 @@ class CuratedApi:
         else:
             response.raise_for_status()
             
-    def request_all_subscribers(self):
+    def request_all_subscribers(self, per_page:int=100, page:int=1):
         """
         Sends a GET request to retrieve all email subscribers from the specified publication or the stored publication ID.
 
+        Parameters:
+            per_page (int): How many subscribers to include in the results. The default value for this is 100 and the maximum value is 500.
+            page (int): Which page of data to retrieve. 
+
         Returns:
-            dict: JSON response containing the links data.
+            dict: JSON response containing the email subscriber data.
         """
         url = self.get_email_subscribers_url()
         headers = self.get_request_headers()
 
-        response = requests.get(url, headers=headers)
+        query = "?page=" + page + "&per_page=" + per_page
+
+        response = requests.get(url + query, headers=headers)
 
         if response.status_code == 200:
             links_data = response.json()
@@ -424,7 +449,7 @@ class CuratedApi:
         else:
             response.raise_for_status()
 
-    def request_specific_link(self, link_id:int):
+    def request_link(self, link_id:int):
         """
         Sends a GET request to retrieve a specific link from the specified publication or the stored publication ID.
 
@@ -443,6 +468,42 @@ class CuratedApi:
             link_data = response.json()
             curated_link = CuratedLink.from_json(link_data)
             return curated_link
+        else:
+            response.raise_for_status()
+
+    def retrieve_email_subscriber(self, subscriber_id:int):
+        url = self.get_email_subscriber_url(subscriber_id)
+        headers = self.get_request_headers()
+
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            subscriber_data = response.json()
+            return subscriber_data
+        else:
+            response.raise_for_status()
+    
+    def retrieve_email_unsubscribers(self, per_page=100, page=1):
+        """
+        Retrieves a list of email unsubscribers.
+
+        Parameters:
+        - per_page (int, optional): Number of results per page, default is 100 but maximum is 500
+        - page (int, optional): Page number to retrieve.
+
+        Returns:
+        - List of email unsubscribers.
+        """
+        url = self.get_email_unsubscribers_url()
+        headers = self.get_request_headers()
+
+        query = f"?per_page={per_page}&page={page}"
+
+        response = requests.get(url + query, headers=headers)
+
+        if response.status_code == 200:
+            subscriber_data = response.json()
+            return subscriber_data
         else:
             response.raise_for_status()
 
@@ -509,7 +570,7 @@ class CuratedApi:
             print(response)
             response.raise_for_status()
 
-    def delete_specific_link(self, link_id:int):
+    def delete_link(self, link_id:int):
         """
         Sends a DELETE request to remove a specific link from the specified publication or the stored publication ID.
 
@@ -531,7 +592,7 @@ class CuratedApi:
         else:
             response.raise_for_status()
 
-    def update_specific_link(self, curated_link:CuratedLink):
+    def update_link(self, curated_link:CuratedLink):
         """
         Updates a specific curated link using a PUT HTTP request.
 
@@ -579,9 +640,61 @@ class CuratedApi:
         response = requests.get(url + query, headers=headers)
 
         if response.status_code == 200:
-            links_data = response.json()
-            links = [CuratedLink.from_json(link_data)
-                     for link_data in links_data]
-            return links
+            issue_data = response.json()
+            issueResponse = [CuratedIssuesResponse.from_json(issue)
+                     for issue in issue_data]
+            return issueResponse
+        else:
+            response.raise_for_status()
+    
+    def request_issue(self, issue_number:int, stats:bool=False):
+        url = self.get_publication_issue_url(issue_number)
+        headers = self.get_request_headers()
+        query = "?stats=true" if stats else ""
+
+        response = requests.get(url + query, headers=headers)
+    
+        if response.status_code == 200:
+            issue_data = response.json()
+            issueResponse = CuratedIssue.from_json(issue_data)
+            return issueResponse
+        else:
+            response.raise_for_status()
+    
+    def create_draft_issue(self):
+        """
+        Creates a new draft issue.
+
+        Returns:
+        - CuratedIssue: The created CuratedIssue instance.
+        """
+        url = self.get_publication_issues_url()
+        headers = self.get_request_headers()
+
+        response = requests.post(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
+
+    # 4. Deleting a draft issue
+    def delete_draft_issue(self, issue_number:int):
+        """
+        Deletes a draft issue.
+
+        Parameters:
+        - issue_number (int): The number of the draft issue to delete.
+
+        Returns:
+        - bool: True if the issue was deleted successfully, otherwise False.
+        """
+        url = self.get_publication_issue_url(issue_number)
+        headers = self.get_request_headers()
+
+        response = requests.delete(url, headers=headers)
+
+        if response.status_code == 200:
+            return response.json()
         else:
             response.raise_for_status()
