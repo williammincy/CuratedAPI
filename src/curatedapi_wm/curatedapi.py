@@ -184,7 +184,7 @@ class CuratedIssue:
 
     def __str__(self):
         """Returns a string representation of the CuratedIssue."""
-        return f"ID: {self.id}\nIssue Number: {self.number}\nSummary: {self.summary}\nURL: {self.url}\Published Date: {self.published_at}\Last nUpdated: {self.updated_at}\n"
+        return f"ID: {self.id}\nIssue Number: {self.number}\nSummary: {self.summary}\nURL: {self.url}\nPublished Date: {self.published_at}\nLast nUpdated: {self.updated_at}\n"
 
     @classmethod
     def from_json(cls, json_data):
@@ -223,6 +223,108 @@ class CuratedIssue:
         }
         return json.dumps(link_data)
 
+class CuratedEmailResponse:
+    def __init__(self, page:int, total_pages:int, total_results:int, data:dict):
+        """
+        Represents a curated email subscribers list response.
+
+        Parameters:
+            page (int): The page number for the data returned in this call.
+            total_pages (int):  How many pages are available using this page size.
+            total_results (int): The total number of results which are available.
+            data (dict): A dictionary of CuratedEmail instances.
+        """
+        self.page = page
+        self.total_pages = total_pages
+        self.total_results = total_results 
+        self.data = data
+
+    def __str__(self):
+        """Returns a string representation of the CuratedEmailResponse."""
+        return f"Page: {self.page}\nTotal Pages: {self.total_results}\nTotal Results: {self.total_results}\nData: {self.data}\n"
+
+    @classmethod
+    def from_json(cls, json_data):
+        """
+        Create a new instance of CuratedEmailResponse based on a JSON object.
+
+        Parameters:
+            json_data (dict): A JSON object containing data for CuratedEmailResponse attributes.
+
+        Returns:
+            CuratedEmailResponse: A new instance of CuratedEmailResponse with data from the JSON object.
+        """
+        return cls(
+            page=json_data.get("page"),
+            total_pages=json_data.get("total_pages"),
+            total_results=json_data.get("total_results"),
+            data=[CuratedEmail.from_json(email)
+                    for email in json_data.get("data")]
+        )
+
+    def to_json(self):
+        """
+        Return the object as JSON.
+
+        Returns:
+            str: JSON representation of the CuratedEmailResponse instance.
+        """
+        emails = []
+        for email in self.data:
+            emails.append(email)
+
+        email_data = {
+            "page": self.page,
+            "total_pages": self.total_pages,
+            "total_results": self.total_results,
+            "data": emails
+        }
+        return json.dumps(email_data)
+
+class CuratedEmail:
+    def __init__(self, id:int, email:str):
+        """
+        Represents a curated email subscriber response.
+
+        Parameters:
+            id (int): Local identifier for the email subscriber instance.
+            email (str): Email address of the subscriber.
+        """
+        self.id = id
+        self.email = email
+
+    def __str__(self):
+        """Returns a string representation of the CuratedEmail."""
+        return f"ID: {self.id}\nEmail: {self.email}\n"
+
+    @classmethod
+    def from_json(cls, json_data):
+        """
+        Create a new instance of CuratedEmail based on a JSON object.
+
+        Parameters:
+            json_data (dict): A JSON object containing data for CuratedEmail attributes.
+
+        Returns:
+            CuratedEmail: A new instance of CuratedEmail with data from the JSON object.
+        """
+        return cls(
+            id=json_data.get("id"),
+            email=json_data.get("email")
+        )
+
+    def to_json(self):
+        """
+        Return the object as JSON.
+
+        Returns:
+            str: JSON representation of the CuratedEmail instance.
+        """
+        email_data = {
+            "id": self.id,
+            "email": self.email
+        }
+        return json.dumps(email_data)
 
 class CuratedApi:
     def __init__(self, api_key:str):
@@ -376,6 +478,9 @@ class CuratedApi:
         return headers
 
     def request_all_publications(self):
+        """
+        Requests all publications within your Cureated account
+        """
         url = self.get_publications_url()
         headers = self.get_request_headers()
         response = requests.get(url, headers=headers)
@@ -439,12 +544,12 @@ class CuratedApi:
         url = self.get_email_subscribers_url()
         headers = self.get_request_headers()
 
-        query = "?page=" + page + "&per_page=" + per_page
+        query = f"?page={page}&per_page={per_page}"
 
         response = requests.get(url + query, headers=headers)
 
         if response.status_code == 200:
-            links_data = response.json()
+            links_data = CuratedEmailResponse.from_json(response.json())
             return links_data
         else:
             response.raise_for_status()
@@ -632,8 +737,7 @@ class CuratedApi:
         """
         url = self.get_publication_issues_url()
         headers = self.get_request_headers()
-        query = "?per_page=" + per_page + "&state=" + state + \
-            "&stats='" + stats
+        query = f"?per_page={per_page}&state={state}&stats={stats}"
         if page is not None:
             query = query + "&page=" + page
 
@@ -641,8 +745,7 @@ class CuratedApi:
 
         if response.status_code == 200:
             issue_data = response.json()
-            issueResponse = [CuratedIssuesResponse.from_json(issue)
-                     for issue in issue_data]
+            issueResponse = CuratedIssuesResponse.from_json(issue_data)
             return issueResponse
         else:
             response.raise_for_status()
