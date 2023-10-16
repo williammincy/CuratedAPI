@@ -751,6 +751,16 @@ class CuratedApi:
             response.raise_for_status()
     
     def request_issue(self, issue_number:int, stats:bool=False):
+        """
+        Sends a GET request to retrieve a specific issue from the specified publication or the stored publication ID.
+
+        Parameters:
+            issue_number (int): The ID of the link.
+            stats (bool): Determines if the resulting data will have stats, defaults to False
+
+        Returns:
+            CuratedIssue: An instance of the CuratedIssue class representing the specific issue.
+        """
         url = self.get_publication_issue_url(issue_number)
         headers = self.get_request_headers()
         query = "?stats=true" if stats else ""
@@ -769,7 +779,7 @@ class CuratedApi:
         Creates a new draft issue.
 
         Returns:
-        - CuratedIssue: The created CuratedIssue instance.
+        - CuratedIssue: The created CuratedIssue instance of the new draft issue.
         """
         url = self.get_publication_issues_url()
         headers = self.get_request_headers()
@@ -781,7 +791,6 @@ class CuratedApi:
         else:
             response.raise_for_status()
 
-    # 4. Deleting a draft issue
     def delete_draft_issue(self, issue_number:int):
         """
         Deletes a draft issue.
