@@ -1,2 +1,8 @@
 le__pycache__
 .DS_*
+
+*.pyc
+*.gz
+
+dist/
+curatedapi_wm.egg-info/

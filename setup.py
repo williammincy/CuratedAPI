@@ -24,7 +24,6 @@ setup(
     install_requires=[],
     keywords=['python', 'newsletter', 'curated', 'api'],
     classifiers=[
-        "Development Status :: Active",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
